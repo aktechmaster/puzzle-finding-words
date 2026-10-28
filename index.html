@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Cari Kata Interaktif</title>
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --primary-dark: #1d4ed8;
+      --success: #2563eb;
+      --error: #ef4444;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: var(--primary-dark);
+      margin-bottom: 8px;
+    }
+
+    .selector-container {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    select {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 2px solid var(--primary);
+      background: white;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 10px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .stat-item span {
+      color: var(--primary-dark);
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    @media (min-width: 768px) {
+      .game-container {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: center;
+      }
+    }
+
+    /* Grid Board Flexible */
+    #grid-container {
+      touch-action: none;
+      background: var(--card-bg);
+      padding: 8px;
+      border-radius: 12px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      display: grid;
+      gap: 2px;
+      width: 100%;
+      max-width: 500px;
+      aspect-ratio: 1 / 1;
+    }
+
+    .cell {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f1f5f9;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: clamp(0.5rem, 2vw, 0.95rem);
+      cursor: pointer;
+      transition: background-color 0.15s, color 0.15s, transform 0.1s;
+    }
+
+    .cell.selecting {
+      background-color: #93c5fd;
+      color: white;
+    }
+
+    .cell.found {
+      background-color: var(--success);
+      color: white;
+      transform: scale(0.95);
+    }
+
+    .cell.error {
+      background-color: var(--error) !important;
+      color: white;
+      animation: shake 0.3s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+
+    /* Word List Sidebar */
+    .word-list-card {
+      background: var(--card-bg);
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .word-list-card h2 {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    #word-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .word-item {
+      padding: 4px 10px;
+      background: #e2e8f0;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .word-item.found {
+      background: #bbf7d0;
+      color: #166534;
+      text-decoration: line-through;
+    }
+
+    /* Popup Modal */
+    .modal-overlay {
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      text-align: center;
+      max-width: 350px;
+      width: 90%;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+    }
+
+    .stars {
+      font-size: 2rem;
+      color: #f59e0b;
+      margin: 10px 0;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 99;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="fireworks"></canvas>
+
+  <header>
+    <h1>Game Cari Kata Interaktif</h1>
+    <div class="selector-container">
+      <label for="materi-select"><strong>Materi:</strong></label>
+      <select id="materi-select"></select>
+    </div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat-item">Waktu: <span id="timer">00:00</span></div>
+    <div class="stat-item">Ditemukan: <span id="found-count">0</span>/<span id="total-count">0</span></div>
+    <div class="stat-item">Skor: <span id="score">0</span></div>
+  </div>
+
+  <div class="controls">
+    <button id="toggle-list-btn">Sembunyikan Daftar Kata</button>
+    <button id="restart-btn">Acak Ulang Papan</button>
+  </div>
+
+  <div class="game-container">
+    <div id="grid-container"></div>
+
+    <div class="word-list-card" id="word-card">
+      <h2>Daftar Kata (<span id="mode-text">Bantuan</span>)</h2>
+      <div id="word-list"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="victory-modal">
+    <div class="modal-content">
+      <h2>Luar Biasa! 🎉</h2>
+      <div class="stars" id="star-rating">⭐⭐⭐</div>
+      <p>Kamu berhasil menemukan semua kata!</p>
+      <br>
+      <p><strong>Waktu:</strong> <span id="final-time">00:00</span></p>
+      <p><strong>Total Skor:</strong> <span id="final-score">0</span></p>
+      <br>
+      <button onclick="restartGame()">Main Lagi</button>
+    </div>
+  </div>
+
+  <!-- Panggil file data materi di sini -->
+  <script src="materi.js"></script>
+
+  <script>
+    let currentMateri = null;
+    let GRID_SIZE = 14;
+    let WORDS = [];
+    
+    let grid = [];
+    let placedWords = [];
+    let foundWords = new Set();
+    
+    let isSelecting = false;
+    let startCell = null;
+    let currentLine = [];
+    
+    let timerInterval = null;
+    let secondsElapsed = 0;
+    let score = 0;
+    let showWordList = true;
+
+    // DOM Elements
+    const materiSelect = document.getElementById('materi-select');
+    const gridEl = document.getElementById('grid-container');
+    const wordListEl = document.getElementById('word-list');
+    const timerEl = document.getElementById('timer');
+    const foundCountEl = document.getElementById('found-count');
+    const totalCountEl = document.getElementById('total-count');
+    const scoreEl = document.getElementById('score');
+    const toggleListBtn = document.getElementById('toggle-list-btn');
+    const modeTextEl = document.getElementById('mode-text');
+    const victoryModal = document.getElementById('victory-modal');
+
+    // Populate Dropdown
+    function populateMateriDropdown() {
+      materiSelect.innerHTML = '';
+      DAFTAR_MATERI.forEach((m, idx) => {
+        const option = document.createElement('option');
+        option.value = idx;
+        option.textContent = m.judul;
+        materiSelect.appendChild(option);
+      });
+    }
+
+    function initGame() {
+      const selectedIndex = materiSelect.value || 0;
+      currentMateri = DAFTAR_MATERI[selectedIndex];
+      GRID_SIZE = currentMateri.gridSize;
+      WORDS = currentMateri.words;
+
+      clearInterval(timerInterval);
+      secondsElapsed = 0;
+      score = 0;
+      foundWords.clear();
+      updateStats();
+      startTimer();
+      
+      generateGrid();
+      renderBoard();
+      renderWordList();
+      victoryModal.classList.remove('active');
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        secondsElapsed++;
+        const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+        const secs = String(secondsElapsed % 60).padStart(2, '0');
+        timerEl.textContent = `${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function generateGrid() {
+      grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(''));
+      placedWords = [];
+
+      const sortedWords = [...WORDS].sort((a, b) => b.length - a.length);
+
+      const directions = [
+        [0, 1], [0, -1], [1, 0], [-1, 0],
+        [1, 1], [-1, -1], [1, -1], [-1, 1]
+      ];
+
+      for (let word of sortedWords) {
+        let placed = false;
+        let attempts = 0;
+
+        while (!placed && attempts < 200) {
+          attempts++;
+          const dir = directions[Math.floor(Math.random() * directions.length)];
+          const startR = Math.floor(Math.random() * GRID_SIZE);
+          const startC = Math.floor(Math.random() * GRID_SIZE);
+
+          const endR = startR + dir[0] * (word.length - 1);
+          const endC = startC + dir[1] * (word.length - 1);
+
+          if (endR >= 0 && endR < GRID_SIZE && endC >= 0 && endC < GRID_SIZE) {
+            let canPlace = true;
+            for (let i = 0; i < word.length; i++) {
+              const r = startR + dir[0] * i;
+              const c = startC + dir[1] * i;
+              if (grid[r][c] !== '' && grid[r][c] !== word[i]) {
+                canPlace = false;
+                break;
+              }
+            }
+
+            if (canPlace) {
+              const cells = [];
+              for (let i = 0; i < word.length; i++) {
+                const r = startR + dir[0] * i;
+                const c = startC + dir[1] * i;
+                grid[r][c] = word[i];
+                cells.push({r, c});
+              }
+              placedWords.push({ word, cells });
+              placed = true;
+            }
+          }
+        }
+      }
+
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          if (grid[r][c] === '') {
+            grid[r][c] = letters[Math.floor(Math.random() * letters.length)];
+          }
+        }
+      }
+    }
+
+    function renderBoard() {
+      gridEl.innerHTML = '';
+      gridEl.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
+
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const cellEl = document.createElement('div');
+          cellEl.classList.add('cell');
+          cellEl.dataset.r = r;
+          cellEl.dataset.c = c;
+          cellEl.textContent = grid[r][c];
+          gridEl.appendChild(cellEl);
+        }
+      }
+    }
+
+    function renderWordList() {
+      wordListEl.innerHTML = '';
+      totalCountEl.textContent = placedWords.length;
+      
+      if (!showWordList) {
+        wordListEl.innerHTML = '<p style="color: #64748b; font-style: italic; text-align: center;">Daftar kata disembunyikan. Cari kata langsung di papan!</p>';
+        return;
+      }
+
+      placedWords.forEach(pw => {
+        const item = document.createElement('div');
+        item.classList.add('word-item');
+        item.id = `word-${pw.word}`;
+        item.textContent = pw.word;
+        if (foundWords.has(pw.word)) item.classList.add('found');
+        wordListEl.appendChild(item);
+      });
+    }
+
+    // Interactive Drag / Touch
+    gridEl.addEventListener('pointerdown', handlePointerDown);
+    gridEl.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+
+    function handlePointerDown(e) {
+      const cell = e.target.closest('.cell');
+      if (!cell) return;
+      isSelecting = true;
+      startCell = { r: parseInt(cell.dataset.r), c: parseInt(cell.dataset.c) };
+      highlightLine(startCell, startCell);
+    }
+
+    function handlePointerMove(e) {
+      if (!isSelecting) return;
+      const element = document.elementFromPoint(e.clientX, e.clientY);
+      if (!element) return;
+      const cell = element.closest('.cell');
+      if (!cell) return;
+
+      const currentCell = { r: parseInt(cell.dataset.r), c: parseInt(cell.dataset.c) };
+      highlightLine(startCell, currentCell);
+    }
+
+    function handlePointerUp() {
+      if (!isSelecting) return;
+      isSelecting = false;
+      validateSelection();
+    }
+
+    function highlightLine(start, end) {
+      clearSelectionHighlight();
+      currentLine = getLineCells(start, end);
+      currentLine.forEach(({r, c}) => {
+        const cell = gridEl.children[r * GRID_SIZE + c];
+        if (cell && !cell.classList.contains('found')) {
+          cell.classList.add('selecting');
+        }
+      });
+    }
+
+    function clearSelectionHighlight() {
+      document.querySelectorAll('.cell.selecting').forEach(el => el.classList.remove('selecting'));
+    }
+
+    function getLineCells(start, end) {
+      const dr = end.r - start.r;
+      const dc = end.c - start.c;
+      const stepR = dr === 0 ? 0 : dr / Math.abs(dr);
+      const stepC = dc === 0 ? 0 : dc / Math.abs(dc);
+
+      if (dr !== 0 && dc !== 0 && Math.abs(dr) !== Math.abs(dc)) {
+        return [{ r: start.r, c: start.c }];
+      }
+
+      const steps = Math.max(Math.abs(dr), Math.abs(dc));
+      const cells = [];
+      for (let i = 0; i <= steps; i++) {
+        cells.push({ r: start.r + i * stepR, c: start.c + i * stepC });
+      }
+      return cells;
+    }
+
+    function validateSelection() {
+      if (currentLine.length === 0) return;
+
+      const selectedStr = currentLine.map(({r, c}) => grid[r][c]).join('');
+      const revSelectedStr = selectedStr.split('').reverse().join('');
+
+      let matchedWord = null;
+
+      for (let pw of placedWords) {
+        if (!foundWords.has(pw.word) && (pw.word === selectedStr || pw.word === revSelectedStr)) {
+          matchedWord = pw;
+          break;
+        }
+      }
+
+      if (matchedWord) {
+        foundWords.add(matchedWord.word);
+        matchedWord.cells.forEach(({r, c}) => {
+          const cell = gridEl.children[r * GRID_SIZE + c];
+          cell.classList.remove('selecting');
+          cell.classList.add('found');
+        });
+
+        score += 100;
+        updateStats();
+
+        const wordItem = document.getElementById(`word-${matchedWord.word}`);
+        if (wordItem) wordItem.classList.add('found');
+
+        if (foundWords.size === placedWords.length) {
+          triggerVictory();
+        }
+      } else {
+        currentLine.forEach(({r, c}) => {
+          const cell = gridEl.children[r * GRID_SIZE + c];
+          if (!cell.classList.contains('found')) {
+            cell.classList.add('error');
+            setTimeout(() => {
+              cell.classList.remove('error', 'selecting');
+            }, 400);
+          }
+        });
+      }
+      currentLine = [];
+    }
+
+    function updateStats() {
+      foundCountEl.textContent = foundWords.size;
+      scoreEl.textContent = score;
+    }
+
+    function triggerVictory() {
+      clearInterval(timerInterval);
+      
+      const timeBonus = Math.max(0, 300 - secondsElapsed) * 2;
+      const finalTotalScore = score + timeBonus;
+
+      document.getElementById('final-time').textContent = timerEl.textContent;
+      document.getElementById('final-score').textContent = finalTotalScore;
+
+      let stars = "⭐⭐⭐";
+      if (secondsElapsed > 180) stars = "⭐⭐";
+      if (secondsElapsed > 300) stars = "⭐";
+      document.getElementById('star-rating').textContent = stars;
+
+      victoryModal.classList.add('active');
+      launchFireworks();
+    }
+
+    toggleListBtn.addEventListener('click', () => {
+      showWordList = !showWordList;
+      toggleListBtn.textContent = showWordList ? "Sembunyikan Daftar Kata" : "Tampilkan Daftar Kata";
+      modeTextEl.textContent = showWordList ? "Bantuan" : "Tantangan";
+      renderWordList();
+    });
+
+    materiSelect.addEventListener('change', initGame);
+    document.getElementById('restart-btn').addEventListener('click', initGame);
+    function restartGame() { initGame(); }
+
+    function launchFireworks() {
+      const canvas = document.getElementById('fireworks');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      let particles = [];
+      for (let i = 0; i < 120; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          dx: (Math.random() - 0.5) * 12,
+          dy: (Math.random() - 0.5) * 12,
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+          radius: Math.random() * 3 + 2,
+          life: 100
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((p) => {
+          if (p.life > 0) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.fill();
+            p.x += p.dx;
+            p.y += p.dy;
+            p.life--;
+          }
+        });
+        if (particles.some(p => p.life > 0)) requestAnimationFrame(animate);
+      }
+      animate();
+    }
+
+    // Start App
+    populateMateriDropdown();
+    initGame();
+  </script>
+</body>
+</html>
