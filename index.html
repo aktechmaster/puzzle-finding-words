@@ -3,304 +3,494 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Game Cari Kata Interaktif</title>
-  <style>
-    :root {
-      --primary: #3b82f6;
-      --primary-dark: #1d4ed8;
-      --success: #2563eb;
-      --error: #ef4444;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text: #1e293b;
-    }
+  <title>Game Cari Kata Edukasi Interaktif</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-      -webkit-user-select: none;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 15px;
-    }
-
-    header {
-      text-align: center;
-      margin-bottom: 12px;
-    }
-
-    h1 {
-      font-size: 1.5rem;
-      color: var(--primary-dark);
-      margin-bottom: 8px;
-    }
-
-    .selector-container {
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    select {
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 2px solid var(--primary);
-      background: white;
-      font-weight: 600;
-      color: var(--text);
-      cursor: pointer;
-      outline: none;
-    }
-
-    .stats-bar {
-      display: flex;
-      gap: 15px;
-      justify-content: center;
-      align-items: center;
-      background: var(--card-bg);
-      padding: 10px 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-      margin-bottom: 15px;
-      font-weight: bold;
-    }
-
-    .stat-item span {
-      color: var(--primary-dark);
-    }
-
-    .controls {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-
-    button {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    button:hover {
-      background-color: var(--primary-dark);
-    }
-
-    .game-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-      width: 100%;
-      max-width: 900px;
-    }
-
-    @media (min-width: 768px) {
-      .game-container {
-        flex-direction: row;
-        align-items: flex-start;
-        justify-content: center;
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            fredoka: ['Fredoka', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            }
+          }
+        }
       }
     }
+  </script>
 
-    /* Grid Board Flexible */
-    #grid-container {
+  <style>
+    /* Background Gradient Educational Mesh */
+    body {
+      background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #f3e8ff 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Floating Educational Background Doodles */
+    .doodle {
+      position: absolute;
+      opacity: 0.15;
+      pointer-events: none;
+      animation: float 12s infinite ease-in-out;
+      z-index: 0;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(10deg); }
+    }
+
+    /* Glassmorphism Card Style */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 20px 25px -5px rgba(14, 165, 233, 0.1), 0 8px 10px -6px rgba(14, 165, 233, 0.05);
+    }
+
+    /* Grid Board styling */
+    #grid-board {
       touch-action: none;
-      background: var(--card-bg);
-      padding: 8px;
-      border-radius: 12px;
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      user-select: none;
+      -webkit-user-select: none;
       display: grid;
-      gap: 2px;
+      gap: 3px;
       width: 100%;
-      max-width: 500px;
       aspect-ratio: 1 / 1;
     }
 
-    .cell {
+    .grid-cell {
       display: flex;
-      justify-content: center;
       align-items: center;
-      background-color: #f1f5f9;
-      border-radius: 4px;
-      font-weight: bold;
-      font-size: clamp(0.5rem, 2vw, 0.95rem);
+      justify-content: center;
+      background-color: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      color: #1e293b;
       cursor: pointer;
-      transition: background-color 0.15s, color 0.15s, transform 0.1s;
+      transition: all 0.12s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
 
-    .cell.selecting {
-      background-color: #93c5fd;
-      color: white;
+    .grid-cell:hover {
+      background-color: #f0f9ff;
+      border-color: #38bdf8;
+      transform: scale(1.03);
     }
 
-    .cell.found {
-      background-color: var(--success);
-      color: white;
-      transform: scale(0.95);
+    .grid-cell.selecting {
+      background-color: #38bdf8 !important;
+      color: #ffffff !important;
+      border-color: #0284c7 !important;
+      transform: scale(0.98);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
     }
 
-    .cell.error {
-      background-color: var(--error) !important;
-      color: white;
-      animation: shake 0.3s;
+    .grid-cell.found {
+      background-color: #22c55e !important;
+      color: #ffffff !important;
+      border-color: #15803d !important;
+      transform: scale(0.96);
+    }
+
+    .grid-cell.error {
+      background-color: #ef4444 !important;
+      color: #ffffff !important;
+      border-color: #b91c1c !important;
+      animation: shake 0.35s ease-in-out;
     }
 
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-3px); }
-      75% { transform: translateX(3px); }
+      20%, 60% { transform: translateX(-4px); }
+      40%, 80% { transform: translateX(4px); }
     }
 
-    /* Word List Sidebar */
-    .word-list-card {
-      background: var(--card-bg);
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 320px;
+    /* Custom Scrollbar for Word List */
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 8px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 8px;
     }
 
-    .word-list-card h2 {
-      font-size: 1.1rem;
-      margin-bottom: 10px;
-      text-align: center;
+    /* Timer Pulsing Alert */
+    .timer-warning {
+      color: #ef4444 !important;
+      animation: pulse-red 1s infinite;
     }
 
-    #word-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      justify-content: center;
-      max-height: 280px;
-      overflow-y: auto;
+    @keyframes pulse-red {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
     }
 
-    .word-item {
-      padding: 4px 10px;
-      background: #e2e8f0;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
-    .word-item.found {
-      background: #bbf7d0;
-      color: #166534;
-      text-decoration: line-through;
-    }
-
-    /* Popup Modal */
-    .modal-overlay {
-      position: fixed;
-      top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.6);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    .modal-overlay.active {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .modal-content {
-      background: white;
-      padding: 30px;
-      border-radius: 16px;
-      text-align: center;
-      max-width: 350px;
-      width: 90%;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
-    }
-
-    .stars {
-      font-size: 2rem;
-      color: #f59e0b;
-      margin: 10px 0;
-    }
-
-    canvas {
+    /* Canvas Fireworks Overlay */
+    #fireworks-canvas {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
       pointer-events: none;
-      z-index: 99;
+      z-index: 100;
     }
   </style>
 </head>
-<body>
+<body class="font-sans text-slate-800 flex flex-col items-center justify-between p-3 sm:p-6">
 
-  <canvas id="fireworks"></canvas>
+  <!-- Background Floating Educational Doodles -->
+  <i class="fa-solid fa-graduation-cap doodle text-sky-500 text-6xl" style="top: 8%; left: 6%; animation-delay: 0s;"></i>
+  <i class="fa-solid fa-book-open doodle text-amber-500 text-6xl" style="top: 70%; left: 4%; animation-delay: 2s;"></i>
+  <i class="fa-solid fa-atom doodle text-purple-500 text-6xl" style="top: 15%; right: 6%; animation-delay: 4s;"></i>
+  <i class="fa-solid fa-lightbulb doodle text-yellow-500 text-6xl" style="top: 75%; right: 5%; animation-delay: 1s;"></i>
+  <i class="fa-solid fa-puzzle-piece doodle text-emerald-500 text-6xl" style="top: 45%; left: 2%; animation-delay: 3s;"></i>
 
-  <header>
-    <h1>Game Cari Kata Interaktif</h1>
-    <div class="selector-container">
-      <label for="materi-select"><strong>Materi:</strong></label>
-      <select id="materi-select"></select>
+  <canvas id="fireworks-canvas"></canvas>
+
+  <!-- Main Container -->
+  <div class="w-full max-w-6xl relative z-10 flex flex-col items-center gap-4 sm:gap-6">
+
+    <!-- Header Section -->
+    <header class="text-center w-full">
+      <div class="inline-flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-1.5 rounded-full shadow-sm border border-sky-100 mb-2">
+        <span class="flex h-3 w-3 rounded-full bg-sky-500 animate-ping"></span>
+        <span class="text-xs font-bold tracking-wider text-sky-600 uppercase">EduPuzzle Interactive</span>
+      </div>
+      <h1 class="font-fredoka text-3xl sm:text-4xl md:text-5xl font-bold text-slate-800 drop-shadow-sm">
+        🧩 Cari Kata Edukasi
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-600 font-medium mt-1">
+        Temukan seluruh kata tersembunyi dengan menarik garis lurus mendatar, menurun, atau diagonal!
+      </p>
+    </header>
+
+    <!-- Top Settings Bar (Materi & Time Selector) -->
+    <div class="glass-card w-full rounded-2xl p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+      
+      <!-- Selector Materi -->
+      <div class="flex items-center gap-2 flex-1 min-w-[240px]">
+        <div class="w-9 h-9 rounded-xl bg-sky-500 text-white flex items-center justify-center font-bold shadow-md shadow-sky-200">
+          <i class="fa-solid fa-book"></i>
+        </div>
+        <div class="flex-1">
+          <label for="materi-select" class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pilih Materi</label>
+          <select id="materi-select" class="w-full bg-slate-50 border-2 border-slate-200 text-slate-700 font-semibold text-xs sm:text-sm rounded-lg px-2.5 py-1.5 focus:border-sky-500 focus:outline-none transition-all cursor-pointer">
+            <!-- Dynamic Options -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Selector Waktu -->
+      <div class="flex items-center gap-2 min-w-[180px]">
+        <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shadow-md shadow-amber-200">
+          <i class="fa-solid fa-stopwatch"></i>
+        </div>
+        <div>
+          <label for="time-mode-select" class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Batas Waktu</label>
+          <select id="time-mode-select" class="bg-slate-50 border-2 border-slate-200 text-slate-700 font-semibold text-xs sm:text-sm rounded-lg px-2.5 py-1.5 focus:border-amber-500 focus:outline-none transition-all cursor-pointer">
+            <option value="0">♾️ Tanpa Batas</option>
+            <option value="180" selected>⏱️ 3 Menit</option>
+            <option value="300">⏱️ 5 Menit</option>
+            <option value="420">⏱️ 7 Menit</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Control Action Buttons -->
+      <div class="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200/60">
+        <button id="toggle-list-btn" class="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-95">
+          <i class="fa-solid fa-eye-slash" id="toggle-icon"></i>
+          <span id="toggle-text">Sembunyikan Kata</span>
+        </button>
+
+        <button id="restart-btn" class="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold shadow-md shadow-sky-200 transition-all flex items-center justify-center gap-1.5 active:scale-95">
+          <i class="fa-solid fa-rotate-right"></i>
+          <span>Acak Ulang</span>
+        </button>
+      </div>
     </div>
-  </header>
 
-  <div class="stats-bar">
-    <div class="stat-item">Waktu: <span id="timer">00:00</span></div>
-    <div class="stat-item">Ditemukan: <span id="found-count">0</span>/<span id="total-count">0</span></div>
-    <div class="stat-item">Skor: <span id="score">0</span></div>
+    <!-- Live Game Scoreboard Bar -->
+    <div class="w-full grid grid-cols-3 gap-2 sm:gap-4">
+      <!-- Timer Card -->
+      <div class="glass-card rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center">
+        <span class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Waktu</span>
+        <div id="timer-display" class="font-fredoka text-xl sm:text-2xl md:text-3xl font-bold text-sky-600 flex items-center gap-1.5 mt-0.5">
+          00:00
+        </div>
+      </div>
+
+      <!-- Found Words Counter Card -->
+      <div class="glass-card rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center">
+        <span class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Progres Kata</span>
+        <div class="font-fredoka text-xl sm:text-2xl md:text-3xl font-bold text-emerald-600 mt-0.5">
+          <span id="found-count">0</span><span class="text-slate-300 text-lg font-normal">/</span><span id="total-count">0</span>
+        </div>
+      </div>
+
+      <!-- Total Score Card -->
+      <div class="glass-card rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center">
+        <span class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Total Skor</span>
+        <div class="font-fredoka text-xl sm:text-2xl md:text-3xl font-bold text-amber-500 flex items-center gap-1 mt-0.5">
+          <i class="fa-solid fa-star text-amber-400 text-lg sm:text-xl"></i>
+          <span id="score-display">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Game Play Area (Grid + Word List Side by Side) -->
+    <div class="w-full flex flex-col md:flex-row items-stretch justify-center gap-4 sm:gap-6">
+      
+      <!-- Grid Board Container Card -->
+      <div class="glass-card rounded-3xl p-3 sm:p-5 flex-1 flex flex-col items-center justify-center shadow-xl w-full max-w-[650px] mx-auto">
+        <div id="grid-board" class="w-full"></div>
+      </div>
+
+      <!-- Word List Card -->
+      <div class="glass-card rounded-3xl p-4 sm:p-5 w-full md:w-[320px] lg:w-[360px] flex flex-col justify-between shadow-xl">
+        <div>
+          <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200/80">
+            <h2 class="font-fredoka text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-sky-500"></i>
+              <span>Daftar Kata</span>
+            </h2>
+            <span id="mode-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-700">
+              Mode Bantuan
+            </span>
+          </div>
+
+          <!-- Dynamic Word List Badges Container -->
+          <div id="word-list-container" class="flex flex-wrap gap-2 max-h-[300px] md:max-h-[480px] overflow-y-auto custom-scroll pr-1">
+            <!-- Dynamic word pill badges -->
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-200/80 text-center">
+          <p class="text-[11px] text-slate-400 font-semibold flex items-center justify-center gap-1">
+            <i class="fa-solid fa-circle-info text-sky-400"></i>
+            Tarik garis lurus dari huruf pertama ke huruf terakhir
+          </p>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
-  <div class="controls">
-    <button id="toggle-list-btn">Sembunyikan Daftar Kata</button>
-    <button id="restart-btn">Acak Ulang Papan</button>
-  </div>
+  <!-- Footer -->
+  <footer class="mt-8 text-center text-xs font-semibold text-slate-500 relative z-10">
+    Game Cari Kata Interaktif &copy; EduPuzzle Media
+  </footer>
 
-  <div class="game-container">
-    <div id="grid-container"></div>
+  <!-- Victory Modal Pop-up -->
+  <div id="victory-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="glass-card bg-white rounded-3xl p-6 sm:p-8 text-center max-w-sm w-[90%] shadow-2xl transform scale-90 transition-all duration-300 modal-card">
+      <div class="w-20 h-20 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-3 shadow-inner">
+        🏆
+      </div>
+      <h2 class="font-fredoka text-2xl sm:text-3xl font-bold text-slate-800">Luar Biasa!</h2>
+      <p class="text-xs sm:text-sm text-slate-500 font-medium mt-1">Kamu berhasil menemukan semua kata!</p>
+      
+      <!-- Stars Rating -->
+      <div id="star-rating" class="text-3xl sm:text-4xl text-amber-400 my-3 flex justify-center gap-1">
+        <i class="fa-solid fa-star drop-shadow"></i>
+        <i class="fa-solid fa-star drop-shadow"></i>
+        <i class="fa-solid fa-star drop-shadow"></i>
+      </div>
 
-    <div class="word-list-card" id="word-card">
-      <h2>Daftar Kata (<span id="mode-text">Bantuan</span>)</h2>
-      <div id="word-list"></div>
+      <div class="bg-slate-50 rounded-2xl p-3 my-4 space-y-1.5 text-xs sm:text-sm font-semibold text-slate-600">
+        <div class="flex justify-between">
+          <span>Waktu Tempuh:</span>
+          <span id="final-time" class="text-sky-600 font-bold">00:00</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Bonus Waktu:</span>
+          <span id="final-bonus" class="text-emerald-600 font-bold">+0</span>
+        </div>
+        <div class="flex justify-between pt-1.5 border-t border-slate-200">
+          <span class="text-slate-800 font-bold">Total Skor Akhir:</span>
+          <span id="final-score" class="text-amber-500 font-bold text-base">0</span>
+        </div>
+      </div>
+
+      <button onclick="initGame()" class="w-full py-3 rounded-2xl bg-sky-500 hover:bg-sky-600 text-white font-fredoka font-bold text-base shadow-lg shadow-sky-200 transition-all active:scale-95 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-play"></i> Main Lagi
+      </button>
     </div>
   </div>
 
-  <div class="modal-overlay" id="victory-modal">
-    <div class="modal-content">
-      <h2>Luar Biasa! 🎉</h2>
-      <div class="stars" id="star-rating">⭐⭐⭐</div>
-      <p>Kamu berhasil menemukan semua kata!</p>
-      <br>
-      <p><strong>Waktu:</strong> <span id="final-time">00:00</span></p>
-      <p><strong>Total Skor:</strong> <span id="final-score">0</span></p>
-      <br>
-      <button onclick="restartGame()">Main Lagi</button>
+  <!-- Time Out Modal Pop-up -->
+  <div id="timeout-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="glass-card bg-white rounded-3xl p-6 sm:p-8 text-center max-w-sm w-[90%] shadow-2xl transform scale-90 transition-all duration-300 modal-card">
+      <div class="w-20 h-20 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-3 shadow-inner">
+        ⌛
+      </div>
+      <h2 class="font-fredoka text-2xl sm:text-3xl font-bold text-slate-800">Waktu Habis!</h2>
+      <p class="text-xs sm:text-sm text-slate-500 font-medium mt-1">Jangan berkecil hati, ayo coba lagi!</p>
+
+      <div class="bg-slate-50 rounded-2xl p-3 my-4 space-y-1 text-xs sm:text-sm font-semibold text-slate-600">
+        <div class="flex justify-between">
+          <span>Kata Ditemukan:</span>
+          <span id="timeout-found" class="text-sky-600 font-bold">0 / 0</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Skor Diraih:</span>
+          <span id="timeout-score" class="text-amber-500 font-bold">0</span>
+        </div>
+      </div>
+
+      <button onclick="initGame()" class="w-full py-3 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-fredoka font-bold text-base shadow-lg shadow-rose-200 transition-all active:scale-95 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-rotate-right"></i> Coba Lagi
+      </button>
     </div>
   </div>
 
-  <!-- Panggil file data materi di sini -->
-  <script src="materi.js"></script>
+  <!-- Optional Script import for materi.js if uploaded externally -->
+  <script src="materi.js" onerror="console.log('materi.js belum dimuat, menggunakan data bawaan.')"></script>
 
+  <!-- Main Game Logic JavaScript -->
   <script>
+    /* ==========================================================
+       1. FALLBACK MATERI DATA (Used if materi.js is missing)
+       ========================================================== */
+    const DEFAULT_MATERI = [
+      {
+        id: "past-tense",
+        judul: "Bahasa Inggris - Past Tense Verbs (14x14)",
+        gridSize: 14,
+        words: [
+          "REACHED", "BROUGHT", "ENCOURAGED", "ATE", "CAME", "ARRIVED",
+          "COVERED", "GAVE", "WENT", "PRAYED", "SLEPT", "GOT",
+          "KEPT", "WALKED", "TOOK", "MARCHED", "MANAGED", "DECIDED",
+          "CLIMBED", "WANTED", "DID", "WORKED", "SAW"
+        ]
+      },
+      {
+        id: "tata-surya",
+        judul: "IPA - Sistem Tata Surya (18x18)",
+        gridSize: 18,
+        words: [
+          "MERKURIUS", "VENUS", "BUMI", "MARS", "YUPITER", "SATURNUS",
+          "URANUS", "NEPTUNUS", "MATAHARI", "ASTEROID", "KOMET", "ORBIT",
+          "GRAVITASI", "SATELLIT", "GALAKSI", "METEOR"
+        ]
+      },
+      {
+        id: "koding-dasar",
+        judul: "Informatika - Pemrograman Dasar (20x20)",
+        gridSize: 20,
+        words: [
+          "JAVASCRIPT", "PYTHON", "VARIABLE", "FUNCTION", "ALGORITHM",
+          "DATABASE", "BOOLEAN", "STRING", "INTEGER", "SYNTAX",
+          "COMPILER", "DEBUGGING", "LOOPING", "ARRAY", "OBJECT", "FRAMEWORK"
+        ]
+      }
+    ];
+
+    // Load materials from window.DAFTAR_MATERI (materi.js) or fallback
+    const MATERI_LIST = (typeof window.DAFTAR_MATERI !== 'undefined' && Array.isArray(window.DAFTAR_MATERI)) 
+      ? window.DAFTAR_MATERI 
+      : DEFAULT_MATERI;
+
+    /* ==========================================================
+       2. AUDIO SYNTHESIZER (Pure Web Audio API - No External Files)
+       ========================================================== */
+    let audioCtx = null;
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playSound(type) {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+
+        if (type === 'select') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.linearRampToValueAtTime(0, now + 0.05);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } else if (type === 'found') {
+          // Chord Arpeggio
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.connect(g);
+            g.connect(audioCtx.destination);
+            o.frequency.value = freq;
+            g.gain.setValueAtTime(0.08, now + idx * 0.06);
+            g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.25);
+            o.start(now + idx * 0.06);
+            o.stop(now + idx * 0.06 + 0.25);
+          });
+        } else if (type === 'error') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(160, now);
+          osc.frequency.linearRampToValueAtTime(110, now + 0.2);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.linearRampToValueAtTime(0, now + 0.2);
+          osc.start(now);
+          osc.stop(now + 0.2);
+        } else if (type === 'victory') {
+          [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((freq, idx) => {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.connect(g);
+            g.connect(audioCtx.destination);
+            o.frequency.value = freq;
+            g.gain.setValueAtTime(0.1, now + idx * 0.1);
+            g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.4);
+            o.start(now + idx * 0.1);
+            o.stop(now + idx * 0.1 + 0.4);
+          });
+        }
+      } catch (e) {
+        console.log('Audio play error:', e);
+      }
+    }
+
+    /* ==========================================================
+       3. GAME STATE VARIABLES
+       ========================================================== */
     let currentMateri = null;
     let GRID_SIZE = 14;
     let WORDS = [];
@@ -315,76 +505,135 @@
     
     let timerInterval = null;
     let secondsElapsed = 0;
+    let maxTimeLimit = 180; // Default 3 Minutes (in seconds)
+    let isGameOver = false;
     let score = 0;
     let showWordList = true;
 
     // DOM Elements
     const materiSelect = document.getElementById('materi-select');
-    const gridEl = document.getElementById('grid-container');
-    const wordListEl = document.getElementById('word-list');
-    const timerEl = document.getElementById('timer');
+    const timeModeSelect = document.getElementById('time-mode-select');
+    const gridBoardEl = document.getElementById('grid-board');
+    const wordListContainerEl = document.getElementById('word-list-container');
+    const timerDisplayEl = document.getElementById('timer-display');
     const foundCountEl = document.getElementById('found-count');
     const totalCountEl = document.getElementById('total-count');
-    const scoreEl = document.getElementById('score');
+    const scoreDisplayEl = document.getElementById('score-display');
     const toggleListBtn = document.getElementById('toggle-list-btn');
-    const modeTextEl = document.getElementById('mode-text');
+    const toggleIcon = document.getElementById('toggle-icon');
+    const toggleText = document.getElementById('toggle-text');
+    const modeBadge = document.getElementById('mode-badge');
     const victoryModal = document.getElementById('victory-modal');
+    const timeoutModal = document.getElementById('timeout-modal');
 
-    // Populate Dropdown
-    function populateMateriDropdown() {
+    /* ==========================================================
+       4. INITIALIZATION & SETUP
+       ========================================================== */
+    function populateDropdowns() {
       materiSelect.innerHTML = '';
-      DAFTAR_MATERI.forEach((m, idx) => {
-        const option = document.createElement('option');
-        option.value = idx;
-        option.textContent = m.judul;
-        materiSelect.appendChild(option);
+      MATERI_LIST.forEach((m, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = m.judul;
+        materiSelect.appendChild(opt);
       });
     }
 
     function initGame() {
-      const selectedIndex = materiSelect.value || 0;
-      currentMateri = DAFTAR_MATERI[selectedIndex];
+      initAudio();
+      
+      const selectedMateriIdx = materiSelect.value || 0;
+      currentMateri = MATERI_LIST[selectedMateriIdx];
       GRID_SIZE = currentMateri.gridSize;
       WORDS = currentMateri.words;
+      maxTimeLimit = parseInt(timeModeSelect.value);
 
+      // Reset State
       clearInterval(timerInterval);
-      secondsElapsed = 0;
+      secondsElapsed = (maxTimeLimit > 0) ? maxTimeLimit : 0;
       score = 0;
+      isGameOver = false;
       foundWords.clear();
-      updateStats();
+      
+      updateStatsDisplay();
+      updateTimerDisplay();
       startTimer();
       
-      generateGrid();
+      generateWordGrid();
       renderBoard();
       renderWordList();
-      victoryModal.classList.remove('active');
+      
+      victoryModal.classList.add('opacity-0', 'pointer-events-none');
+      victoryModal.querySelector('.modal-card').classList.add('scale-90');
+      timeoutModal.classList.add('opacity-0', 'pointer-events-none');
+      timeoutModal.querySelector('.modal-card').classList.add('scale-90');
     }
 
+    /* ==========================================================
+       5. TIMER SYSTEM (COUNTDOWN & UNLIMITED MODES)
+       ========================================================== */
     function startTimer() {
       timerInterval = setInterval(() => {
-        secondsElapsed++;
-        const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
-        const secs = String(secondsElapsed % 60).padStart(2, '0');
-        timerEl.textContent = `${mins}:${secs}`;
+        if (isGameOver) return;
+
+        if (maxTimeLimit > 0) {
+          // Countdown Mode
+          secondsElapsed--;
+          if (secondsElapsed <= 0) {
+            secondsElapsed = 0;
+            updateTimerDisplay();
+            triggerTimeOut();
+            return;
+          }
+        } else {
+          // Unlimited Count-up Mode
+          secondsElapsed++;
+        }
+
+        updateTimerDisplay();
       }, 1000);
     }
 
-    function generateGrid() {
+    function updateTimerDisplay() {
+      const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+      const secs = String(secondsElapsed % 60).padStart(2, '0');
+      timerDisplayEl.textContent = `${mins}:${secs}`;
+
+      // Warning color if remaining time in countdown mode is < 30s
+      if (maxTimeLimit > 0 && secondsElapsed <= 30) {
+        timerDisplayEl.classList.add('timer-warning');
+      } else {
+        timerDisplayEl.classList.remove('timer-warning');
+      }
+    }
+
+    /* ==========================================================
+       6. GRID GENERATION & WORD PLACEMENT ALGORITHM
+       ========================================================== */
+    function generateWordGrid() {
       grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(''));
       placedWords = [];
 
+      // Sort words by length descending to optimize board space fitting
       const sortedWords = [...WORDS].sort((a, b) => b.length - a.length);
 
+      // 8 Directions: Horizontal, Vertical, Diagonal
       const directions = [
-        [0, 1], [0, -1], [1, 0], [-1, 0],
-        [1, 1], [-1, -1], [1, -1], [-1, 1]
+        [0, 1],   // Right
+        [0, -1],  // Left
+        [1, 0],   // Down
+        [-1, 0],  // Up
+        [1, 1],   // Down-Right
+        [-1, -1], // Up-Left
+        [1, -1],  // Down-Left
+        [-1, 1]   // Up-Right
       ];
 
       for (let word of sortedWords) {
         let placed = false;
         let attempts = 0;
 
-        while (!placed && attempts < 200) {
+        while (!placed && attempts < 250) {
           attempts++;
           const dir = directions[Math.floor(Math.random() * directions.length)];
           const startR = Math.floor(Math.random() * GRID_SIZE);
@@ -410,7 +659,7 @@
                 const r = startR + dir[0] * i;
                 const c = startC + dir[1] * i;
                 grid[r][c] = word[i];
-                cells.push({r, c});
+                cells.push({ r, c });
               }
               placedWords.push({ word, cells });
               placed = true;
@@ -419,6 +668,7 @@
         }
       }
 
+      // Fill remaining empty cells with random uppercase letters
       const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       for (let r = 0; r < GRID_SIZE; r++) {
         for (let c = 0; c < GRID_SIZE; c++) {
@@ -429,59 +679,85 @@
       }
     }
 
+    /* ==========================================================
+       7. BOARD & WORD LIST RENDERING
+       ========================================================== */
     function renderBoard() {
-      gridEl.innerHTML = '';
-      gridEl.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
+      gridBoardEl.innerHTML = '';
+      gridBoardEl.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
+
+      // Dynamic font size sizing based on grid dimension
+      const fontSizeRem = Math.max(0.6, 1.3 - (GRID_SIZE - 14) * 0.04);
 
       for (let r = 0; r < GRID_SIZE; r++) {
         for (let c = 0; c < GRID_SIZE; c++) {
           const cellEl = document.createElement('div');
-          cellEl.classList.add('cell');
+          cellEl.classList.add('grid-cell');
+          cellEl.style.fontSize = `${fontSizeRem}rem`;
           cellEl.dataset.r = r;
           cellEl.dataset.c = c;
           cellEl.textContent = grid[r][c];
-          gridEl.appendChild(cellEl);
+          gridBoardEl.appendChild(cellEl);
         }
       }
     }
 
     function renderWordList() {
-      wordListEl.innerHTML = '';
+      wordListContainerEl.innerHTML = '';
       totalCountEl.textContent = placedWords.length;
-      
+
       if (!showWordList) {
-        wordListEl.innerHTML = '<p style="color: #64748b; font-style: italic; text-align: center;">Daftar kata disembunyikan. Cari kata langsung di papan!</p>';
+        wordListContainerEl.innerHTML = `
+          <div class="w-full text-center py-8 text-slate-400 font-semibold text-xs italic bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+            <i class="fa-solid fa-eye-slash text-2xl mb-2 text-slate-300 block"></i>
+            Daftar kata disembunyikan dalam Mode Tantangan!
+          </div>`;
         return;
       }
 
       placedWords.forEach(pw => {
         const item = document.createElement('div');
-        item.classList.add('word-item');
-        item.id = `word-${pw.word}`;
-        item.textContent = pw.word;
-        if (foundWords.has(pw.word)) item.classList.add('found');
-        wordListEl.appendChild(item);
+        const isFound = foundWords.has(pw.word);
+        
+        item.id = `word-badge-${pw.word}`;
+        item.className = `px-3 py-1.5 rounded-xl font-fredoka font-semibold text-xs tracking-wide transition-all duration-200 flex items-center gap-1.5 border ${
+          isFound 
+            ? 'bg-emerald-100 text-emerald-800 border-emerald-300 line-through opacity-80' 
+            : 'bg-white text-slate-700 border-slate-200 shadow-sm hover:border-sky-300'
+        }`;
+        
+        item.innerHTML = `
+          <i class="fa-solid ${isFound ? 'fa-circle-check text-emerald-600' : 'fa-hashtag text-slate-300'} text-[10px]"></i>
+          <span>${pw.word}</span>
+        `;
+        
+        wordListContainerEl.appendChild(item);
       });
     }
 
-    // Interactive Drag / Touch
-    gridEl.addEventListener('pointerdown', handlePointerDown);
-    gridEl.addEventListener('pointermove', handlePointerMove);
+    /* ==========================================================
+       8. DRAG & TOUCH SELECTION ENGINE (8 DIRECTIONS)
+       ========================================================== */
+    gridBoardEl.addEventListener('pointerdown', handlePointerDown);
+    gridBoardEl.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
 
     function handlePointerDown(e) {
-      const cell = e.target.closest('.cell');
+      if (isGameOver) return;
+      const cell = e.target.closest('.grid-cell');
       if (!cell) return;
+
       isSelecting = true;
       startCell = { r: parseInt(cell.dataset.r), c: parseInt(cell.dataset.c) };
+      playSound('select');
       highlightLine(startCell, startCell);
     }
 
     function handlePointerMove(e) {
-      if (!isSelecting) return;
+      if (!isSelecting || isGameOver) return;
       const element = document.elementFromPoint(e.clientX, e.clientY);
       if (!element) return;
-      const cell = element.closest('.cell');
+      const cell = element.closest('.grid-cell');
       if (!cell) return;
 
       const currentCell = { r: parseInt(cell.dataset.r), c: parseInt(cell.dataset.c) };
@@ -489,7 +765,7 @@
     }
 
     function handlePointerUp() {
-      if (!isSelecting) return;
+      if (!isSelecting || isGameOver) return;
       isSelecting = false;
       validateSelection();
     }
@@ -497,8 +773,8 @@
     function highlightLine(start, end) {
       clearSelectionHighlight();
       currentLine = getLineCells(start, end);
-      currentLine.forEach(({r, c}) => {
-        const cell = gridEl.children[r * GRID_SIZE + c];
+      currentLine.forEach(({ r, c }) => {
+        const cell = gridBoardEl.children[r * GRID_SIZE + c];
         if (cell && !cell.classList.contains('found')) {
           cell.classList.add('selecting');
         }
@@ -506,7 +782,7 @@
     }
 
     function clearSelectionHighlight() {
-      document.querySelectorAll('.cell.selecting').forEach(el => el.classList.remove('selecting'));
+      document.querySelectorAll('.grid-cell.selecting').forEach(el => el.classList.remove('selecting'));
     }
 
     function getLineCells(start, end) {
@@ -515,6 +791,7 @@
       const stepR = dr === 0 ? 0 : dr / Math.abs(dr);
       const stepC = dc === 0 ? 0 : dc / Math.abs(dc);
 
+      // Lock drag line to 8 straight directions only
       if (dr !== 0 && dc !== 0 && Math.abs(dr) !== Math.abs(dc)) {
         return [{ r: start.r, c: start.c }];
       }
@@ -527,10 +804,13 @@
       return cells;
     }
 
+    /* ==========================================================
+       9. VALIDATION & WIN / TIMEOUT LOGIC
+       ========================================================== */
     function validateSelection() {
       if (currentLine.length === 0) return;
 
-      const selectedStr = currentLine.map(({r, c}) => grid[r][c]).join('');
+      const selectedStr = currentLine.map(({ r, c }) => grid[r][c]).join('');
       const revSelectedStr = selectedStr.split('').reverse().join('');
 
       let matchedWord = null;
@@ -543,86 +823,134 @@
       }
 
       if (matchedWord) {
+        // Correct Word Match -> Mark Green
+        playSound('found');
         foundWords.add(matchedWord.word);
-        matchedWord.cells.forEach(({r, c}) => {
-          const cell = gridEl.children[r * GRID_SIZE + c];
+
+        matchedWord.cells.forEach(({ r, c }) => {
+          const cell = gridBoardEl.children[r * GRID_SIZE + c];
           cell.classList.remove('selecting');
           cell.classList.add('found');
         });
 
         score += 100;
-        updateStats();
+        updateStatsDisplay();
 
-        const wordItem = document.getElementById(`word-${matchedWord.word}`);
-        if (wordItem) wordItem.classList.add('found');
+        const badge = document.getElementById(`word-badge-${matchedWord.word}`);
+        if (badge) {
+          badge.className = 'px-3 py-1.5 rounded-xl font-fredoka font-semibold text-xs tracking-wide bg-emerald-100 text-emerald-800 border border-emerald-300 line-through opacity-80 flex items-center gap-1.5';
+          badge.querySelector('i').className = 'fa-solid fa-circle-check text-emerald-600 text-[10px]';
+        }
 
+        // Check Victory Condition
         if (foundWords.size === placedWords.length) {
           triggerVictory();
         }
       } else {
-        currentLine.forEach(({r, c}) => {
-          const cell = gridEl.children[r * GRID_SIZE + c];
+        // Wrong Selection -> Flash Red
+        playSound('error');
+        currentLine.forEach(({ r, c }) => {
+          const cell = gridBoardEl.children[r * GRID_SIZE + c];
           if (!cell.classList.contains('found')) {
             cell.classList.add('error');
             setTimeout(() => {
               cell.classList.remove('error', 'selecting');
-            }, 400);
+            }, 350);
           }
         });
       }
       currentLine = [];
     }
 
-    function updateStats() {
+    function updateStatsDisplay() {
       foundCountEl.textContent = foundWords.size;
-      scoreEl.textContent = score;
+      scoreDisplayEl.textContent = score;
     }
 
     function triggerVictory() {
+      isGameOver = true;
       clearInterval(timerInterval);
-      
-      const timeBonus = Math.max(0, 300 - secondsElapsed) * 2;
+      playSound('victory');
+
+      // Bonus score based on remaining time
+      let timeBonus = 0;
+      if (maxTimeLimit > 0) {
+        timeBonus = secondsElapsed * 3;
+      }
       const finalTotalScore = score + timeBonus;
 
-      document.getElementById('final-time').textContent = timerEl.textContent;
+      document.getElementById('final-time').textContent = timerDisplayEl.textContent;
+      document.getElementById('final-bonus').textContent = `+${timeBonus}`;
       document.getElementById('final-score').textContent = finalTotalScore;
 
-      let stars = "⭐⭐⭐";
-      if (secondsElapsed > 180) stars = "⭐⭐";
-      if (secondsElapsed > 300) stars = "⭐";
-      document.getElementById('star-rating').textContent = stars;
+      // Rating Stars calculation
+      let starsHtml = '<i class="fa-solid fa-star drop-shadow"></i><i class="fa-solid fa-star drop-shadow"></i><i class="fa-solid fa-star drop-shadow"></i>';
+      if (maxTimeLimit > 0 && secondsElapsed < maxTimeLimit * 0.3) {
+        starsHtml = '<i class="fa-solid fa-star drop-shadow"></i><i class="fa-solid fa-star drop-shadow"></i><i class="fa-regular fa-star text-slate-300"></i>';
+      }
+      document.getElementById('star-rating').innerHTML = starsHtml;
 
-      victoryModal.classList.add('active');
+      victoryModal.classList.remove('opacity-0', 'pointer-events-none');
+      victoryModal.querySelector('.modal-card').classList.remove('scale-90');
       launchFireworks();
     }
 
+    function triggerTimeOut() {
+      isGameOver = true;
+      clearInterval(timerInterval);
+      playSound('error');
+
+      document.getElementById('timeout-found').textContent = `${foundWords.size} / ${placedWords.length}`;
+      document.getElementById('timeout-score').textContent = score;
+
+      timeoutModal.classList.remove('opacity-0', 'pointer-events-none');
+      timeoutModal.querySelector('.modal-card').classList.remove('scale-90');
+    }
+
+    /* ==========================================================
+       10. TOGGLE MODES & EVENT LISTENERS
+       ========================================================== */
     toggleListBtn.addEventListener('click', () => {
       showWordList = !showWordList;
-      toggleListBtn.textContent = showWordList ? "Sembunyikan Daftar Kata" : "Tampilkan Daftar Kata";
-      modeTextEl.textContent = showWordList ? "Bantuan" : "Tantangan";
+      if (showWordList) {
+        toggleIcon.className = 'fa-solid fa-eye-slash';
+        toggleText.textContent = 'Sembunyikan Kata';
+        modeBadge.textContent = 'Mode Bantuan';
+        modeBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-700';
+      } else {
+        toggleIcon.className = 'fa-solid fa-eye';
+        toggleText.textContent = 'Tampilkan Kata';
+        modeBadge.textContent = 'Mode Tantangan';
+        modeBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-700';
+      }
       renderWordList();
     });
 
     materiSelect.addEventListener('change', initGame);
+    timeModeSelect.addEventListener('change', initGame);
     document.getElementById('restart-btn').addEventListener('click', initGame);
-    function restartGame() { initGame(); }
 
+    /* ==========================================================
+       11. CANVAS FIREWORKS CELEBRATION EFFECT
+       ========================================================== */
     function launchFireworks() {
-      const canvas = document.getElementById('fireworks');
+      const canvas = document.getElementById('fireworks-canvas');
       const ctx = canvas.getContext('2d');
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
 
       let particles = [];
-      for (let i = 0; i < 120; i++) {
+      const colors = ['#0ea5e9', '#22c55e', '#f59e0b', '#ec4899', '#8b5cf6'];
+
+      for (let i = 0; i < 150; i++) {
         particles.push({
           x: canvas.width / 2,
           y: canvas.height / 2,
-          dx: (Math.random() - 0.5) * 12,
-          dy: (Math.random() - 0.5) * 12,
-          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-          radius: Math.random() * 3 + 2,
-          life: 100
+          dx: (Math.random() - 0.5) * 14,
+          dy: (Math.random() - 0.5) * 14,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          radius: Math.random() * 4 + 2,
+          life: 110
         });
       }
 
@@ -636,6 +964,7 @@
             ctx.fill();
             p.x += p.dx;
             p.y += p.dy;
+            p.dy += 0.05; // Gravity
             p.life--;
           }
         });
@@ -645,7 +974,7 @@
     }
 
     // Start App
-    populateMateriDropdown();
+    populateDropdowns();
     initGame();
   </script>
 </body>
